@@ -3,6 +3,7 @@ extern crate sodiumoxide;
 use indy_api_types::domain::wallet::KeyDerivationMethod;
 use indy_api_types::errors::prelude::*;
 use self::sodiumoxide::crypto::aead::chacha20poly1305_ietf;
+use self::sodiumoxide::randombytes;
 use self::sodiumoxide::utils;
 use std::cmp;
 use std::io;
@@ -37,7 +38,9 @@ pub fn derive_key(passphrase: &str, salt: &pwhash_argon2i13::Salt, key_derivatio
 }
 
 pub fn gen_nonce() -> Nonce {
-    Nonce(chacha20poly1305_ietf::gen_nonce())
+    let mut n = chacha20poly1305_ietf::Nonce([0u8; NONCEBYTES]);
+    randombytes::randombytes_into(&mut n.0);
+    Nonce(n)
 }
 
 pub fn gen_nonce_and_encrypt(data: &[u8], key: &Key) -> (Vec<u8>, Nonce) {
